@@ -1,6 +1,11 @@
+import { connection } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase/server";
 
+// Halaman admin selalu dinamis di balik login; tidak divalidasi sebagai halaman instan.
+export const instant = false;
+
 export default async function AdminOverview() {
+  await connection(); // klien Supabase memakai waktu; render saat permintaan
   const supabase = await createSupabaseServer();
   const count = async (table: string, filter?: [string, string]) => {
     let q = supabase.from(table).select("*", { count: "exact", head: true });

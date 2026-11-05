@@ -1,8 +1,13 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { SessionForm } from "@/components/admin/SessionForm";
 
+// Halaman admin selalu dinamis di balik login; tidak divalidasi sebagai halaman instan.
+export const instant = false;
+
 export default async function SessionsPage() {
+  await connection();
   const supabase = await createSupabaseServer();
   const { data: sessions } = await supabase
     .from("research_sessions")

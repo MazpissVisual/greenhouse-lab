@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Host_Grotesk, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { MainNav, NavLinks } from "@/components/layout/MainNav";
 import { LogoMark } from "@/components/brand/Logo";
 import { InstallButton } from "@/components/pwa/InstallButton";
 import { PwaRegister } from "@/components/pwa/PwaRegister";
@@ -28,6 +29,10 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "Greenhouse Lab", statusBarStyle: "default" },
   formatDetection: { telephone: false },
   icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon.png", type: "image/png", sizes: "192x192" },
+    ],
     apple: [{ url: "/pwa-icon?size=180", sizes: "180x180", type: "image/png" }],
   },
 };
@@ -53,27 +58,23 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <noscript>
           <style>{`.reveal{opacity:1!important;transform:none!important}`}</style>
         </noscript>
-        <header className="border-b border-border bg-surface pt-[env(safe-area-inset-top)]">
+        <header className="border-b border-border bg-surface/85 pt-[env(safe-area-inset-top)] backdrop-blur-md lg:sticky lg:top-0 lg:z-40">
           <nav
             aria-label="Navigasi utama"
             className="mx-auto flex max-w-6xl items-center gap-x-6 px-4 py-3"
           >
             <Link
               href="/"
-              className="mr-auto flex items-center gap-2 font-display text-lg font-bold tracking-tight"
+              className="group mr-auto flex items-center gap-2.5 rounded-xl font-display text-lg font-bold tracking-tight"
             >
-              <LogoMark className="h-8 w-8" />
+              <span className="inline-block transition-transform duration-200 group-hover:-rotate-12 group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:transform-none">
+                <LogoMark className="h-8 w-8" />
+              </span>
               Greenhouse Lab
             </Link>
-            {NAV.map((n) => (
-              <Link
-                key={n.href}
-                href={n.href}
-                className="text-[15px] text-muted hover:text-foreground max-md:hidden"
-              >
-                {n.label}
-              </Link>
-            ))}
+            <Suspense fallback={<NavLinks activeHref={null} />}>
+              <MainNav />
+            </Suspense>
             <InstallButton />
           </nav>
         </header>

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { GenerateCodes } from "@/components/admin/GenerateCodes";
 import { setParticipantStatus, setSessionStatus } from "../../../actions";
@@ -11,7 +12,11 @@ const NEXT_ACTIONS: Record<string, { to: string; label: string }[]> = {
   archived: [],
 };
 
+// Halaman admin selalu dinamis di balik login; tidak divalidasi sebagai halaman instan.
+export const instant = false;
+
 export default async function SessionDetail(props: PageProps<"/admin/sessions/[id]">) {
+  await connection();
   const { id } = await props.params;
   const supabase = await createSupabaseServer();
   const { data: s } = await supabase.from("research_sessions").select("*").eq("id", id).maybeSingle();

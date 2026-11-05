@@ -3,7 +3,7 @@ import { getServiceClient } from "@/lib/supabase/admin";
 
 /** Catat tindakan administratif. Jangan masukkan password, token, atau kode plaintext ke metadata. */
 export async function logAudit(
-  actorUserId: string,
+  actorUserId: string | null,
   action: string,
   entityType: string,
   entityId: string | null,
