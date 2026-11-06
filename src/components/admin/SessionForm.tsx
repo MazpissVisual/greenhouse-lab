@@ -5,8 +5,20 @@ import { createSession, type FormState } from "@/app/admin/actions";
 
 const input = "mt-1 w-full field";
 
+/** datetime-local tidak membawa zona waktu; server (UTC) akan salah membacanya. Ubah ke ISO UTC di browser. */
+function withLocalTimezone(prev: FormState, fd: FormData) {
+  for (const key of ["starts_at", "ends_at"]) {
+    const v = fd.get(key);
+    if (typeof v === "string" && v) {
+      const d = new Date(v); // dibaca sebagai waktu lokal browser
+      if (!Number.isNaN(d.getTime())) fd.set(key, d.toISOString());
+    }
+  }
+  return createSession(prev, fd);
+}
+
 export function SessionForm() {
-  const [state, action, pending] = useActionState<FormState, FormData>(createSession, {});
+  const [state, action, pending] = useActionState<FormState, FormData>(withLocalTimezone, {});
   return (
     <form action={action} className="grid grid-cols-1 gap-3 card p-4 sm:grid-cols-2">
       <div className="sm:col-span-2">
