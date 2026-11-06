@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Host_Grotesk, Instrument_Sans } from "next/font/google";
 import "./globals.css";
+import { HideOnAdmin } from "@/components/layout/HideOnAdmin";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { MainNav, NavLinks } from "@/components/layout/MainNav";
 import { LogoMark } from "@/components/brand/Logo";
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <noscript>
           <style>{`.reveal{opacity:1!important;transform:none!important}`}</style>
         </noscript>
+        <HideOnAdmin>
         <header className="border-b border-border bg-surface/85 pt-[env(safe-area-inset-top)] backdrop-blur-md lg:sticky lg:top-0 lg:z-40">
           <nav
             aria-label="Navigasi utama"
@@ -78,9 +80,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <InstallButton />
           </nav>
         </header>
+        </HideOnAdmin>
 
         <div className="flex-1">{children}</div>
 
+        <HideOnAdmin>
         <footer className="bg-field text-on-field">
           <div className="mx-auto grid grid-cols-1 max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2">
             <div>
@@ -119,10 +123,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             prediksi iklim.
           </p>
         </footer>
+        </HideOnAdmin>
 
-        <Suspense fallback={null}>
-          <BottomNav />
-        </Suspense>
+        <HideOnAdmin>
+          <Suspense fallback={null}>
+            <BottomNav />
+          </Suspense>
+        </HideOnAdmin>
         <PwaRegister />
         <PointerGlow />
       </body>
