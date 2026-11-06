@@ -26,6 +26,13 @@ export default async function SessionDetail(props: PageProps<"/admin/sessions/[i
     .select("id,participant_label,status,created_at")
     .eq("session_id", id)
     .order("participant_label");
+  const { data: records } = await supabase
+    .from("experiment_records")
+    .select("id,participant_id,explanation,prediction,submitted_at,experiments(experiment_code,title)")
+    .eq("session_id", id)
+    .eq("status", "submitted")
+    .order("submitted_at", { ascending: false });
+  const labelOf = new Map((participants ?? []).map((p) => [p.id, p.participant_label]));
 
   return (
     <section className="space-y-6">
@@ -72,6 +79,52 @@ export default async function SessionDetail(props: PageProps<"/admin/sessions/[i
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div>
+        <h2 className="mb-2 font-semibold">Hasil eksperimen ({records?.length ?? 0})</h2>
+        <div className="overflow-x-auto card">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-muted">
+                <th className="p-2">Peserta</th>
+                <th>Eksperimen</th>
+                <th>Prediksi</th>
+                <th>Penjelasan</th>
+                <th>Waktu</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(records ?? []).length === 0 && (
+                <tr>
+                  <td colSpan={5} className="p-3 text-muted">
+                    Belum ada hasil yang masuk.
+                  </td>
+                </tr>
+              )}
+              {(records ?? []).map((r) => {
+                const exp = (Array.isArray(r.experiments) ? r.experiments[0] : r.experiments) as {
+                  experiment_code: string;
+                  title: string;
+                } | null;
+                const pred = r.prediction as { optionId?: string; correct?: boolean } | null;
+                return (
+                  <tr key={r.id} className="border-t border-border align-top">
+                    <td className="p-2 font-mono">{labelOf.get(r.participant_id) ?? "-"}</td>
+                    <td>{exp?.title ?? "-"}</td>
+                    <td>
+                      {pred?.optionId ?? "-"} {pred?.correct ? "(tepat)" : "(kurang tepat)"}
+                    </td>
+                    <td className="max-w-xs whitespace-pre-wrap py-2">{r.explanation}</td>
+                    <td className="whitespace-nowrap">
+                      {r.submitted_at ? new Date(r.submitted_at).toLocaleString("id-ID") : "-"}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   );

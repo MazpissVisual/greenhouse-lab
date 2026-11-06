@@ -20,6 +20,22 @@ export function ExperimentHub() {
     (id: string, correct: boolean) => setResults((r) => (r[id] === correct ? r : { ...r, [id]: correct })),
     [],
   );
+  // Tanpa kode partisipan server menjawab 401 -> mode latihan (tidak ada yang disimpan).
+  const onSubmit = useCallback(
+    async (r: { experimentId: string; prediction: string; epsilon: number; explanation: string }) => {
+      try {
+        const res = await fetch("/api/research/experiments/record", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(r),
+        });
+        return res.ok;
+      } catch {
+        return false;
+      }
+    },
+    [],
+  );
   const done = Object.keys(results).length;
   const stars = Object.values(results).filter(Boolean).length;
 
@@ -77,6 +93,7 @@ export function ExperimentHub() {
         key={EXPERIMENTS[active].id}
         exp={EXPERIMENTS[active]}
         onComplete={onComplete}
+        onSubmit={onSubmit}
         onNext={active < EXPERIMENTS.length - 1 ? () => setActive(active + 1) : undefined}
       />
     </div>

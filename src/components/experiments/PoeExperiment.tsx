@@ -51,12 +51,21 @@ function Heading({ icon: Icon, children, id }: { icon: LucideIcon; children: Rea
 export function PoeExperiment({
   exp,
   onComplete,
+  onSubmit,
   onNext,
 }: {
   exp: ExperimentDef;
   onComplete?: (id: ExperimentDef["id"], correct: boolean) => void;
+  /** Kirim hasil ke sesi penelitian; true bila tersimpan, false bila mode latihan/gagal. */
+  onSubmit?: (r: {
+    experimentId: ExperimentDef["id"];
+    prediction: string;
+    epsilon: number;
+    explanation: string;
+  }) => Promise<boolean>;
   onNext?: () => void;
 }) {
+  const [saved, setSaved] = useState(false);
   const [stage, setStage] = useState<Stage>("predict");
   const [prediction, setPrediction] = useState<string | null>(null);
   const [epsilon, setEpsilon] = useState(DEFAULT_PARAMS.epsilon);
@@ -84,12 +93,25 @@ export function PoeExperiment({
     }
   }, [stage, correct, exp.id, onComplete]);
 
+  // Bila peserta masuk lewat kode, simpan hasil ke sesi penelitian (sekali per tahap hasil).
+  useEffect(() => {
+    if (stage !== "feedback" || !prediction || !onSubmit) return;
+    let cancelled = false;
+    onSubmit({ experimentId: exp.id, prediction, epsilon, explanation }).then((ok) => {
+      if (!cancelled) setSaved(ok);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [stage, prediction, epsilon, explanation, exp.id, onSubmit]);
+
   const restart = () => {
     setStage("predict");
     setPrediction(null);
     setEpsilon(DEFAULT_PARAMS.epsilon);
     setChanged(false);
     setExplanation("");
+    setSaved(false);
   };
 
   const bump = (d: number) => {
@@ -343,7 +365,11 @@ export function PoeExperiment({
           </>
         )}
       </div>
-      <p className="text-xs text-muted">Mode latihan: tidak ada data yang dikirim atau disimpan di server.</p>
+      <p className="text-xs text-muted">
+        {saved
+          ? "Jawabanmu sudah tersimpan ke sesi penelitian."
+          : "Mode latihan: tidak ada data yang dikirim atau disimpan di server."}
+      </p>
     </article>
   );
 }
